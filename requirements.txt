@@ -13,3 +13,4 @@ peft>=0.12
 accelerate>=0.33
 sentencepiece>=0.2
 tqdm>=4.66
+streamlit>=1.36
