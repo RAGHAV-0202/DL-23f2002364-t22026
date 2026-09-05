@@ -22,6 +22,34 @@ ADAPTER_DIR = Path(__file__).parent / "models" / "deberta_lora"
 BASE_MODEL = "microsoft/deberta-v3-small"
 OPTION_LETTERS = ["A", "B", "C", "D", "E"]
 
+# ── Sample questions from the dataset ───────────────────────────────────
+EXAMPLES = [
+    {
+        "prompt": "Determine the correct option: What is the term used in astrophysics to describe light-matter interactions resulting in energy shifts in the radiation field?",
+        "A": "Blueshifting",
+        "B": "Redshifting",
+        "C": "Reddening",
+        "D": "Whitening",
+        "E": "Yellowing",
+    },
+    {
+        "prompt": "Pick the best possible answer: What is Martin Heidegger's view on the relationship between time and human existence?",
+        "A": "Humans exist within a time continuum that is infinite and does not have definite boundaries.",
+        "B": "Humans do not exist inside time, but they are time. The relationship is fundamental to existence.",
+        "C": "Heidegger does not believe in the existence of time or that it has any effect on human consciousness.",
+        "D": "The relationship between time and human existence is cyclical.",
+        "E": "Time is an illusion, and the past, present, and future are all happening simultaneously.",
+    },
+    {
+        "prompt": "What is the relationship between the Hamiltonians and eigenstates in supersymmetric quantum mechanics?",
+        "A": "The eigenstates of one Hamiltonian are completely independent of the partner Hamiltonian.",
+        "B": "For every eigenstate of one Hamiltonian, its partner Hamiltonian has a corresponding eigenstate with the same energy.",
+        "C": "The Hamiltonians in SUSY QM always share the exact same eigenstates.",
+        "D": "Only the ground state is shared between the two Hamiltonians.",
+        "E": "The partner Hamiltonians have eigenstates with opposite energies.",
+    },
+]
+
 # ── Page config ─────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="Smart MCQ Solver",
@@ -101,10 +129,24 @@ tokenizer, model = load_model()
 
 st.divider()
 
+# ── Try Example selector ───────────────────────────────────────────────
+example_labels = ["— Select an example —"] + [
+    f"Example {i+1}: {ex['prompt'][:60]}…" for i, ex in enumerate(EXAMPLES)
+]
+selected = st.selectbox("💡 Try a sample question from the dataset", example_labels)
+
+if selected != "— Select an example —":
+    idx = example_labels.index(selected) - 1
+    ex = EXAMPLES[idx]
+    st.session_state["q_prompt"] = ex["prompt"]
+    for ltr in OPTION_LETTERS:
+        st.session_state[f"opt_{ltr}"] = ex.get(ltr, "")
+
 prompt = st.text_area(
     "📝 Question",
     height=120,
     placeholder="Paste the MCQ question here …",
+    key="q_prompt",
 )
 
 st.markdown("**Options** (leave unused options blank)")
